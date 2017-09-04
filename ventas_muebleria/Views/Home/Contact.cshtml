@@ -1,0 +1,38 @@
+﻿
+@{
+    ViewBag.Title = "Registro Ventas";
+
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>RegistroVentas</h2>
+
+<div style="border: 2px #3c8dbc solid; border-radius: 5px; padding: 0px; display:inline-block">
+    <label style="float: left; border-radius: 0px 0px 6px 0px; color: #fff; background: #3c8dbc; padding: 3px;">Vigencia Seguro</label>
+    <br />
+    <br />
+
+    <div class="fieldMantenimiento" style="display: inline-block; margin-left: 3px;">
+        <label id="lblFecha">Del.</label><br />
+
+        @(Html.Kendo().DatePicker()
+                                    .Name("FechaIniciaSeguro")
+
+                                    .HtmlAttributes(new { @validacion_id = "FechaIniciaSeguro", tabindex = 20, @class = "validarTab", style = "text-align: center;" }).Culture("es-MX")
+        )
+    </div>
+
+
+    <div class="fieldMantenimiento" style="display: inline-block; margin-left: 3px;">
+        <label id="lblFecha">Al.</label><br />
+        @(Html.Kendo().DatePicker()
+                                    .Name("VigenciaSeguro")
+
+                                    .HtmlAttributes(new { @validacion_id = "VigenciaSeguro", tabindex = 20, @class = "validarTab", style = "text-align: center;" }).Culture("es-MX")
+        )
+    </div>
+
+
+</div>
+
+

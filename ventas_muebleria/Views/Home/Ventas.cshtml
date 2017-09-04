@@ -1,0 +1,167 @@
+﻿@using ventas_muebleria.Models;
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+
+    string formatoDecCantidad = "0";
+    string formatoDecPrecios = "0";
+    formatoDecCantidad = formatoDecCantidad.PadLeft(Convert.ToInt32(2), '0');
+    formatoDecPrecios = formatoDecPrecios.PadLeft(Convert.ToInt32(2), '0');
+    string formatoCantidad = "{0: #,#0." + formatoDecCantidad + "}";
+    string formatoPrecio = "{0: #,#0." + formatoDecPrecios + "}";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Ventas</title>
+    <link rel="stylesheet" type="text/css" href="~/Content/login.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/font-awesome.min.css" />
+    <script type="text/javascript" src="~/Scripts/jquery-2.1.3.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/bootstrap.min.js"></script>
+    @*<script type="text/javascript" src="~/Scripts/funciones.js"></script>*@
+
+</head>
+
+<body style="background-color:white; margin-top:0px;padding-top:0px" >
+
+
+  
+
+    <div id="ListadoVentas" class="listado"  style="width: 1000px; width: 100%;margin:40px 40px 40px 40px">
+     
+        <div class="box-header with-border">
+
+            <h5>@Html.Label("Ventas Activas", new { id = "Titulo", style = "color:black; display:inline;" })</h5>  
+                 
+        </div>
+
+        <br />
+
+        <div id="Controles" style="display:inline-block;width:200px; margin-right:15px;">
+
+            @(Html.Kendo().TextBox().Name("FiltroBusqueda").HtmlAttributes(new { id= "FiltroBusqueda", style = "width:100%" }))
+
+        </div>
+
+    <div id="Controles" style="display:inline-block;width:100px; margin-right:15px;">
+
+        @(Html.Kendo().DropDownList()
+        .Name("Prueba")
+        .HtmlAttributes(new { id="IdTipo",style="width:100%"})      
+         .AutoBind(true)
+         .BindTo(new List<SelectListItem> {
+                  new SelectListItem() {
+                 Text = "Cliente", Value = "1"
+                     },
+                   new SelectListItem() {
+                  Text = "Venta", Value = "2"
+                     },          
+               })
+        .Value("1")
+        )
+
+    </div>
+       
+          <button type="button" , class="k-button AddAction" style="display: inline;" onclick="btnBuscOnClick(event)">
+               <i class="fa fa-search"></i>
+               <span class="titulo-menu-opcion-tabla">Buscar </span>
+           </button>   
+        
+       
+        <div id="registr" style="display: inline; margin-left:350px;margin-right:40px">
+
+            <a href="@Url.Action("MostrarMantenimiento", "Ventas")" id="opcionregistrar" style="display: none;"></a>
+
+            <button type="button" , class="btn btn-primary" id="botonRegistr"  onclick="btnRegistrarOnClick(event)">
+                <i class="fa fa-plus-square"></i>
+                <span class="titulo-menu-opcion-tabla">Registrar Venta </span>
+            </button>
+
+        </div>
+
+     <div id="GridPrueba" style="display:inline-block; margin-left:0px;margin-top:10px;width:70%" >
+
+               @(Html.Kendo().Grid<VentasDetalle>()
+                            .Name("gridDetalleVentas")
+                            .Columns(columns =>
+                            {
+                                columns.Bound(p => p.FolioVta).Title("Folio Vta").Width("15%").Format("{0:0000}").HtmlAttributes(new { id = "Id" }).HeaderHtmlAttributes(new { style=""});
+                                columns.Bound(p => p.IdClienteNombre).Title("Cliente").Width("25%").HtmlAttributes(new { id = "Descripcion" });
+                                columns.Bound(p => p.Importe).Title("Total").Width("12%").HtmlAttributes(new { id = "Total", @class = "Total", style = "text-align:right;" }).Format(formatoCantidad).HtmlAttributes(new { style = "text-align:right" }) .HeaderHtmlAttributes(new { style = "text-align:right;b" }); ;
+                                columns.Bound(p => p.Fecha).Title("Fecha").Width("10%").HtmlAttributes(new { id = "Fecha" }).Format("{0:dd/MM/yyyy}").HtmlAttributes(new { style = "text-align:center" })
+                                .HeaderHtmlAttributes(new { style = "text-align:center" });
+                                columns.Bound(p => p.Activo).Title("Activo").Width("8%").HtmlAttributes(new { id = "Activo" }).HtmlAttributes(new { style = "text-align:center" }).HeaderHtmlAttributes(new { style = "text-align:center" }); ;
+
+
+
+                            })
+
+                            .Selectable(selectable => selectable.Mode(GridSelectionMode.Single))
+                            .Navigatable()
+                            .Scrollable(s => s.Height(251))
+                            .Sortable()
+                            .Filterable()
+                            .Resizable(resize => resize.Columns(true))
+                            .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .Batch(true)
+                                        .PageSize(10)
+                                        .Read(read => read.Action("ObtenerlistadoVentas", "Ventas").Data("datosAdicionalesGrid"))
+
+                            ).Events(GCEvents =>
+                            {
+                                //  GCEvents.Change("onRowSelected");
+                                //  GCEvents.DataBound("OnBound");
+                            })
+                        .Excel(exl =>
+                        {
+                            exl.AllPages(true)
+                                .FileName("Ventas.xlsx")
+                                .ForceProxy(true)
+                                .ProxyURL(Url.Action("GenerarExcel", "Conceptos"));
+                        }).Pageable(p => p.ButtonCount(5))
+               )
+
+           </div> 
+   </div>
+    
+    <script>
+
+        $(document).ready(function () {
+
+
+        })
+
+        function datosAdicionalesGrid() {
+            debugger;
+            var IdTipo = $("#IdTipo").val();
+            IdTipo = IdTipo == "" || IdTipo === undefined ? 0 : IdTipo;
+            var busqueda = $("#FiltroBusqueda").val();
+            return {
+                IdTipo: IdTipo, Busqueda: busqueda
+            };
+        }
+
+        function btnBuscOnClick(event) {
+            var IdTipo = $("#IdTipo").val();
+            IdTipo = IdTipo == "" || IdTipo === undefined ? 0 : IdTipo;
+            var busqueda = $("#FiltroBusqueda").val();
+            $("#gridDetalleVentas").data("kendoGrid").dataSource.read({ "IdTipo": IdTipo, "Busqueda": busqueda });
+
+        }
+
+        function btnRegistrarOnClick() {
+           var a = document.getElementById("opcionregistrar");
+         var href = a.href;
+         a.click();
+         a.href = href;
+
+        }
+         </script>
+
+</body>
+</html>

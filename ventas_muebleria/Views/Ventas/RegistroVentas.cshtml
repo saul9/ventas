@@ -1,0 +1,903 @@
+﻿@using ventas_muebleria.Models;
+
+@{
+    ViewBag.Title = "Registro Ventas";
+
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+
+
+    string formatoDecCantidad = "0";
+    string formatoDecPrecios = "0";
+    formatoDecCantidad = formatoDecCantidad.PadLeft(Convert.ToInt32(2), '0');
+    formatoDecPrecios = formatoDecPrecios.PadLeft(Convert.ToInt32(2), '0');
+    string formatoCantidad = "{0: #,#0." + formatoDecCantidad + "}";
+    string formatoPrecio = "{0: #,#0." + formatoDecPrecios + "}";
+}
+
+@*<link rel="stylesheet" href="styles/kendo.common.min.css" />
+<link rel="stylesheet" href="styles/kendo.default.min.css" />
+<link rel="stylesheet" href="styles/kendo.default.mobile.min.css" />
+
+<script src="js/jquery.min.js"></script>
+<script src="js/kendo.all.min.js"></script>*@
+
+<style>
+    
+   input#Cantidad {
+
+    color:black;
+    
+    }
+    #Registrovent > button > span {
+    font-size:13px;
+    
+    }
+   #Registrovent > div:nth-child(2) > button:nth-child(4){
+
+        background-color:#01DF74;
+        border-color:#01DF74;
+   }
+    #Registrovent > div:nth-child(2) > button:nth-child(2) {
+    
+    background-color:#01DF74;
+    border-color:#01DF74;
+    }
+    #Registrovent > div:nth-child(2) > button:nth-child(3){
+
+          background-color:#01DF74;
+         border-color:#01DF74;
+    }
+ #Borrar > a{
+
+    // height:auto;
+
+ }
+   /* Error template */
+   .k-notification-error.k-group {
+       background: rgba(100%,0%,0%,.7);
+       color: #ffffff;
+      
+   }
+   .error {
+       width: 300px;
+       height: 100px;
+   }
+   .error h3 {
+       font-size: 1em;
+       padding: 10px 10px 5px;
+      
+   }
+   .error p {
+       font-size: 1em;
+      
+       padding-bottom:5px;
+   }
+   .error img {
+       float: left;
+       margin: 30px 15px 30px 30px;
+   }
+
+   /* Success template */
+   .k-notification-Correcto.k-group {
+       background: rgba(0%,60%,0%,.7);
+       color: #fff;
+   }
+   .Correcto {
+        width: 300px;
+       height: 100px;
+   }
+   
+   .Correcto h3 {
+       font-size: 1em;
+       padding: 10px 10px 5px;
+   }
+   .Correcto img {
+       float: left;
+       margin: 30px 15px 30px 30px;
+   }
+
+</style>
+
+    <span id="notification" style="display:none;"></span>
+
+    <div id="Registrovent" class="Registro" style="width: 70%; margin:auto !important;height:100%">
+
+
+        <div style="border: 2px #3c8dbc solid; border-radius: 5px; padding: 0px; display:inline-block; width:100%;height:auto;padding-bottom:0px;">
+            <label style="float: left; border-radius: 0px 0px 6px 0px; color: #fff; background: #3c8dbc; padding: 3px; width:99.5%;height:30px; ">Registro Venta</label>
+            <br />
+            <br />
+            <div style="padding-left: 80%">
+                <div id="alert"></div>
+
+                <label id="FolioVta" , style="padding-left: 20px;color:#01DF74"></label>
+
+
+            </div>
+            <div class="fieldMantenimiento" style="display: inline-block; margin-left: 20px;margin-top:10px;">
+
+                <label id="lblCliente" style="float: left; border-radius: 4px 4px 4px 4px; color: black; background: #3c8dbc; padding: 3px;height:20px;margin-right:3px">Cliente</label>
+
+                @(Html.Kendo().AutoComplete()
+                              .Name("IdCliente")
+                              .DataTextField("Cliente")
+                              .Filter("contains")
+                              .Placeholder("Buscar Cliente")
+                              .MinLength(3)
+                              .HtmlAttributes(new { id = "IdCliente", style = "width:250px", tabindex = "16", onblur = "validarCliente(event)" })
+                              .DataSource(source =>
+                              {
+                                  source.Custom().Type("aspnetmvc-ajax");
+                                  source.Read(read =>
+                                  {
+                                      read.Action("ObtenerClientes", "Ventas").Data("parametrosClientes");
+                                  }).ServerFiltering(true);
+                              })
+                              .Events(e =>
+                              {
+                                  // e.Close("CambiarComprobante");
+                                  e.Select("seleccionarCliente");
+                              })
+
+                )
+
+                <label id="RFC" , style="margin-left:3px">
+
+                </label>
+
+            </div>
+            <br />
+
+
+            <div id="IdArticuloDiv" class="fieldMantenimiento" style="display:inline-block; margin-left: 20px;margin-top:20px;">
+
+                <label id="lblCliente" style="float: left; border-radius: 4px 4px 4px 4px; color: black; background: #3c8dbc; padding: 3px;height:20px;margin-right:3px">Articulo</label>
+
+                @(Html.Kendo().AutoComplete()
+                              .Name("IdArticulo")
+                              .DataTextField("Articulo")
+                              .Filter("contains")
+                              .Placeholder("Buscar Articulo")
+                              .MinLength(3)
+                              .HtmlAttributes(new { id = "IdArticulo", style = "width:250px", tabindex = "16", onblur = "validarArticulos(event)" })
+                              .DataSource(source =>
+                              {
+                                  source.Custom().Type("aspnetmvc-ajax");
+                                  source.Read(read =>
+                                  {
+                                      read.Action("ObtenerArticulos", "Ventas").Data("parametrosArticulos");
+                                  }).ServerFiltering(true);
+                              })
+                              .Events(e =>
+                              {
+                                  // e.Close("CambiarComprobante");
+                                  e.Select("seleccionarArticulo");
+                              })
+
+                )
+                <button type="button" , class="k-button AddAction" id="botonAgregAr" onclick="btnAgregArticulo(event)">
+                    <i class="fa fa-plus-circle "></i>
+                    <span class="titulo-menu-opcion-tabla"> </span>
+                </button>
+
+            </div>
+
+            <div class="fieldMantenimiento" style="display: inline-block; margin-left: 0px;margin-top:10px;">
+
+                <div id="GridMantenimiento" style="display:inline-block; margin-left:0px;margin-top:0px;width:100%">
+
+
+                    @(Html.Kendo().Grid<ArticulosVenta>()
+                            .Name("gridDetalleVentasRegistro")
+                            .Columns(columns =>
+                            {
+                                columns.Bound(p => p.IdArticulo).Title("Clave").Width("10%").Format("{0:0000}").HtmlAttributes(new { id = "IdArticulo" }).HeaderHtmlAttributes(new { style = "" });
+                                columns.Bound(p => p.Descripcion).Title("Articulo").Width("30%").HtmlAttributes(new { id = "Descripcion" });
+                                columns.Bound(p => p.Modelo).Title("Modelo").Width("12%").HtmlAttributes(new { id = "Modelo" });
+                                columns.Bound(p => p.Cantidad).Title("Cantidad").Width("12%").Format("{0:0000}").HtmlAttributes(new { id = "Cantidad", @class = "Cantidad editable-cell", style = "text-align:right;" }).HtmlAttributes(new { style = "text-align:right" }).HeaderHtmlAttributes(new { style = "text-align:right;" }); ;
+                                columns.Bound(p => p.Precio).Title("Precio").Width("11%").HtmlAttributes(new { id = "Precio", @class = "Precio", style = "text-align:right;" }).Format(formatoCantidad).HtmlAttributes(new { style = "text-align:right" }).HeaderHtmlAttributes(new { style = "text-align:right;" }); ;
+                                columns.Bound(p => p.Importe).Title("Importe").Width("12%").HtmlAttributes(new { id = "Total", @class = "Total", style = "text-align:right;" }).Format(formatoCantidad).HtmlAttributes(new { style = "text-align:right" }).HeaderHtmlAttributes(new { style = "text-align:right;" }); ;
+                                columns.Command(command => command.Custom("<button type='button' style='background-color:transparent;border:0px;outline:0px; width:100%; padding:0px' onclick='btnEliminarOnClick(this)'>  <i class='fa fa-times'> </i></button>")).Title("Borrar").Width("10%").HtmlAttributes(new { id = "Borrar", style = "text-align:center;" }).HeaderHtmlAttributes(new { style = "text-align:center;" });
+                               // columns.Command(command => command.Destroy()).Width("13%");
+                                columns.Bound(p => p.Existencia).Hidden().HtmlAttributes(new { id = "Existencia", style = "text-align:right;" });
+
+                            })
+
+                            .Selectable(selectable => selectable.Mode(GridSelectionMode.Single))
+                            .Navigatable()
+                            .Editable(editable => editable.Mode(GridEditMode.InCell).DisplayDeleteConfirmation(false))
+                            .Scrollable(s => s.Height(100))
+                            .Sortable()
+
+                            .Filterable()
+                            .Resizable(resize => resize.Columns(true))
+
+                             .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .Batch(true)
+                                        .PageSize(10)
+                             // .Read(read => read.Action("ObtenerlistadoVentas", "Ventas").Data("datosAdicionalesGrid"))
+                            // .Destroy(destroy => destroy.Action("EditingCustom_Destroy", "gridDetalleVentasRegistro"))
+                            .Model(model =>
+                            {
+                                model.Id(p => p.IdArticulo);
+                                model.Field(p => p.IdArticulo).Editable(false);
+                                model.Field(p => p.Precio).Editable(false);
+                                model.Field(p => p.Importe).Editable(false);
+                                model.Field(p => p.Descripcion).Editable(false);
+                                model.Field(p => p.Modelo).Editable(false);
+                                model.Field(p => p.Cantidad).Editable(true);
+
+
+                            })
+                            ).Events(GCEvents =>
+                            {
+                                GCEvents.Change("onRowSelected");
+                                GCEvents.Save("Save");
+                                GCEvents.DataBound("seleccionarPrimero");
+                            })
+
+                    )
+
+                </div>
+
+            </div>
+            <div id="IdTotales" class="fieldMantenimiento" style="display: none; margin-left:  55%;text-align:right;">
+
+                @*<div id="IdTotalEnganche" class="fieldMantenimiento" style="display: inline-block; margin-left:  65%;text-align:right;">
+
+                        <label id="lblEnganche" style="float: left; border-radius: 3px 3px 3px 3px; background-color:darkgrey ;color:black;margin-right:15px; margin-left:0px"></label>
+
+                        <br />
+                    </div>
+
+                    <div id="IdTotaleBonificacion" class="fieldMantenimiento" style="display: inline-block; margin-left:  50%;text-align:right;">
+
+                        <label id="lblBonificacion" style="float: left; border-radius: 3px 3px 3px 3px; background-color:darkgrey ;color:black;margin-right:15px; margin-left:0px"></label  >
+
+                        <br />
+                    </div>
+
+                    <div id="IdTotalGlobal" class="fieldMantenimiento" style="display: inline-block; margin-left:  62%;text-align:right;">
+
+                        <label id="lblTotal" style="float: left; border-radius: 3px 3px 3px 3px; background-color:darkgrey ;color:black;margin-right:15px; margin-left:30px"></label>
+
+
+                        <br />*@
+                @*   </div>*@
+
+                <table>
+                    <tr>
+                        <td align="right"><label style="float: left; border-radius: 4px 4px 4px 4px; color: black; background: #A4A4A4; padding: 3px; width:99.5%;height:20px;margin-right:3px ">Enganche</label></td>
+                        <td> <label id="lblEnganche" style="margin-left:40px"></label></td>
+
+                    </tr>
+
+                    <tr>
+                        <td><label style="float: left; border-radius: 4px 4px 4px 4px; color: black; background: #A4A4A4; padding: 3px; width:99.5%;height:20px;margin-right:3px ">Bonificacion Enganche</label></td>
+                        <td><label id="lblBonificacion" style="margin-left:40px"></label></td>
+
+                    </tr>
+
+                    <tr>
+                        <td><label style="float: left; border-radius: 4px 4px 4px 4px; color: black; background: #A4A4A4; padding: 3px; width:99.5%;height:20px;margin-right:3px ">Total</label></td>
+                        <td><label id="lblTotal" style="margin-left:40px"></label></td>
+
+                    </tr>
+
+                </table>
+
+
+
+            </div>
+            <br />
+            <div id="IdOpcionesPago" class="fieldMantenimiento" style="display: none; margin-left:0px;width:100%;margin-top:0px">
+
+
+                <table width="100%">
+
+                    <tr style="background-color:cornflowerblue">
+
+                        <td width="200" align="center" colspan="5"> ABONOS MENSUALES</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+
+                        <td align="center"> 3 ABONOS DE </td>
+                        <td align="left">$ <label id="IdAbonos3"></label> </td>
+                        <td align="left"> TOTAL A PAGAR </td>
+                        <td align="left">$ <label id="IdTotalpagar3"></label></td>
+                        <td align="left"> SE AHORRA $ </td>
+                        <td align="left"> $ <label id="IdImporteAhorro3"></label></td>
+                        <td>@(Html.Kendo().RadioButton().Checked(true).Name("radioboton").HtmlAttributes(new { @name = "Agrupar" }).Label("").Value("3")) <br /></td>
+                    </tr>
+                    <tr>
+
+                        <td align="center"> 6 ABONOS DE</td>
+
+                        <td align="left">$ <label id="IdAbonos6"></label></td>
+
+                        <td align="left">TOTAL A PAGAR  </td>
+
+                        <td align="left"> $ <label id="IdTotalpagar6"></label></td>
+
+                        <td align="left"> SE AHORRA $ </td>
+                        <td align="left"> $ <label id="IdImporteAhorro6"></label></td>
+                        <td>@(Html.Kendo().RadioButton().Checked(true).Name("radioboton").HtmlAttributes(new { @name = "Agrupar" }).Label("").Value("6")) <br /></td>
+                    </tr>
+                    <tr>
+
+                        <td align="center"> 9 ABONOS DE</td>
+                        <td align="left"> $ <label id="IdAbonos9"></label></td>
+                        <td align="left">TOTAL A PAGAR  </td>
+                        <td align="left">$ <label id="IdTotalpagar9"></label> </td>
+                        <td align="left"> SE AHORRA $ </td>
+                        <td align="left"> $ <label id="IdImporteAhorro9"></label></td>
+
+                        <td>@(Html.Kendo().RadioButton().Checked(true).Name("radioboton").HtmlAttributes(new { @name = "Agrupar" }).Label("").Value("9")) <br /></td>
+                    </tr>
+                    <tr>
+
+                        <td align="center"> 12 ABONOS DE</td>
+                        <td align="left">$ <label id="IdAbonos12"></label> </td>
+                        <td align="left"> TOTAL A PAGAR  </td>
+                        <td align="left">$ <label id="IdTotalpagar12"></label> </td>
+                        <td align="left"> SE AHORRA $ </td>
+                        <td align="left"> $ <label id="IdImporteAhorro12"></label></td>
+                        <td>@(Html.Kendo().RadioButton().Checked(true).Name("radioboton").HtmlAttributes(new { @name = "Agrupar" }).Label("").Value("12")) <br /></td>
+                    </tr>
+
+                </table>
+
+
+
+
+            </div>
+            <br />
+
+        </div>
+
+        <div style="display: inline; margin-left:75%;margin-top:5px">
+
+
+
+            <button type="button" ,id="registrar" , class="btn btn-danger" style="display: inline;margin-left:10px;margin-top:5px ;height:3% !important" onclick="btnCancelar(event)">
+                <i class="fa fa-times"></i>
+                <span class="titulo-menu-opcion-tabla">Cancelar</span>
+            </button>
+
+            <a href="@Url.Action("Index", "Home")" id="opcionGuardar" style="display: none;"></a>
+            <button type="button" ,id="registrar" , class="btn btn-danger" style="display: none;margin-left:10px;margin-top:5px ;height:3% !important" onclick="btnGuardar(event)">
+                <i class="fa fa-floppy-o"></i>
+                <span class="titulo-menu-opcion-tabla">Guardar</span>
+            </button>
+
+            <button type="button" ,id="Siguiente" , class="btn btn-danger" style="display: inline;margin-left:10px;margin-top:5px ;height:3% !important" onclick="btnSuiguiente(event)">
+                <i class="fa fa-arrow-right"></i>
+                <span class="titulo-menu-opcion-tabla">Siguiente</span>
+            </button>
+        </div>
+      
+    </div>
+
+    <script>
+
+        var DescripcionArticulo;
+        var IdArticulo = 0;;
+        var modelo;
+        var Precio = 0;
+        var Importe;
+        var IdArticuloAux = 0;
+        var ExistenciAux = 0;
+
+
+        var notification
+        $(document).ready(function () {
+
+            obtenerConsecutivo();
+
+
+            notification = $("#notification").kendoNotification({
+                position: {
+                    pinned: true,
+                    top: 40,
+                    right: 40
+                },
+                autoHideAfter: 3000,
+                stacking: "down",
+                templates: [ {
+                    type: "error",
+                    template: $("#errorTemplate").html()
+                }, {
+                    type: "Correcto",
+                    template: $("#successTemplate").html()
+                }]
+
+            }).data("kendoNotification");
+
+
+            $(document).one("kendo:pageUnload", function () { if (notification) { notification.hide(); } });
+
+        });
+
+        //function btnEliminarOnClick(e) {
+
+        //    onRowSelected(e);
+
+        //    var grid = $("#gridDetalleVentasRegistro").data("kendoGrid");
+        //   grid.rem
+
+        //}
+
+        function btnEliminarOnClick(element) {
+
+            grid = $("#gridDetalleVentasRegistro").data("kendoGrid");
+            grid.removeRow($(element).closest("tr"));
+
+            btnCancelar();
+        }
+
+
+        function Save(e) {
+
+            debugger;
+            var grid = $("#gridDetalleVentasRegistro").data("kendoGrid");
+            var item = grid.dataItem(grid.select());
+
+            var CantidadValidar = e.values.Cantidad;
+
+            if (CantidadValidar <= ExistenciAux) {
+
+                var existenciaInsertar = ExistenciAux - CantidadValidar;
+                ObtenerPrecioarticulo(existenciaInsertar, CantidadValidar);
+
+                //setFocusedCellValue("Importe", Importeaux);
+            }
+            else {
+
+                MensajeNotificacion("Error", "La Cantidad es mayor a la existencia del Articulo ", "error");
+            }
+        }
+
+        function btnGuardar() {
+            debugger;
+            var entidad = obtenerEntidad();
+            var existenci = ExistenciAux - entidad.Cantidad;
+            var entidadaux = JSON.stringify(entidad);
+            if (entidad != null && entidad != null) {
+                $.ajax({
+                    url: '@Url.Action("InsertarVenta", "Ventas")',
+                    type: "POST",
+                    data: "Entidadetalles=" + entidadaux + "&Existencia=" + existenci,
+                    success: function (data) {
+                        if (data !== null && data !== "") {
+                            var datos = JSON.parse(data);
+
+                            if (datos.Estatus == "Correcto") {
+
+                                MensajeNotificacion("Bien Hecho", "Tu venta ha sido registrada correctamente", "Correcto");
+                                setTimeout("Listado()", 2000);
+
+                               
+                            }
+                            else {
+                                MensajeNotificacion("Error", "Al registrar la Venta ")
+                            }
+
+                        }
+                    }
+                })
+
+            }
+
+        }
+        function Listado() {
+            var a = document.getElementById("opcionGuardar");
+            var href = a.href;
+            a.click();
+            a.href = href;
+        }
+
+        function obtenerEntidad() {
+
+            var grid = $("#gridDetalleVentasRegistro").data("kendoGrid");
+            var detalle;
+            var listaDetalle = [];
+            var entidad = {
+                FolioVta: parseInt($("#FolioVta").text().split("Folio Venta:")[1]),
+                IdCliente: parseInt($("#IdCliente").val().split('-')[0]),
+                TipoVenta: $('input[name=Agrupar]:checked').val() + "Meses"
+            }
+            for (var i = 0; i < grid._data.length; i++) {
+
+                detalle = {
+                    FolioVta: entidad.FolioVta,
+                    IdCliente: entidad.IdCliente,
+                    TipoVenta: entidad.TipoVenta,
+                    IdArticulo: grid._data[i].IdArticulo,
+                    Cantidad: grid._data[i].Cantidad,
+                    Importe: grid._data[i].Importe.replace(',', ''),
+                    Activo: "Si"
+
+                }
+
+
+                listaDetalle.push(detalle);
+
+            }
+            entidad["listaDetalles"] = detalle;
+
+            return detalle;
+        }
+
+        function ActualizarExistencia() {
+
+            if (IdArticuloAux != "" && IdArticuloAux != undefined && IdArticuloAux != null) {
+
+                $.ajax({
+                    url: '@Url.Action("ActulizarExistenciaArticulo", "Ventas")',
+                    type: "POST",
+                    data: "IdArticulo=" + IdArticuloAct + "&Cantidad=" + ExistenciAux,
+                    success: function (data) {
+                        if (data !== null && data !== "") {
+                            var datos = JSON.parse(data);
+                            if (datos.Estatus == "Correcto") {
+
+                                Listado();
+                            }
+
+                        }
+                    }
+                })
+            }
+            else {
+
+                Listado();
+            }
+
+    }
+
+        function ObtenerPrecioarticulo(existenciaInsertar, CantidadValidar) {
+            $.ajax({
+                url: '@Url.Action("ObtenerPrecioArticulo", "Ventas")',
+                type: "POST",
+                data: "CantidadIngresada=" + CantidadValidar + "&Cantidad=" + existenciaInsertar + "&IdArticulo=" + IdArticuloAux,
+                success: function (data) {
+                    debugger;
+                    if (data !== null && data !== "") {
+                        var datos = JSON.parse(data);
+
+                        if (datos.Estatus == "Correcto") {
+                            debugger;
+                            var PrecioGenerado = number_format(parseFloat(datos.PrecioGenerado), 2);
+                            var ImporteGenerado = number_format(parseFloat(datos.ImporteGenerado), 2);
+                            var EngancheGenerado = number_format(parseFloat(datos.EngancheGenerado), 2);
+                            var BonificacionEnganche = number_format(parseFloat(datos.BonificacionEnganche), 2);
+                            var TotalAdeudo = number_format(parseFloat(datos.TotalAdeudo), 2);
+                            var PrecioContado = number_format(parseFloat(datos.PrecioContado), 2);
+                            // var Total = parseFloat(datos.Total);
+                            var Total3Meses = number_format(parseFloat(datos.Total3Meses), 2);
+                            var Total6Meses = number_format(parseFloat(datos.Total6Meses), 2);
+                            var Total9Meses = number_format(parseFloat(datos.Total9Meses), 2);
+                            var Total12Meses = number_format(parseFloat(datos.Total12Meses), 2);
+                            var ImporteAbono3Meses = number_format(parseFloat(datos.ImporteAbono3Meses), 2);
+                            var ImporteAbono6Meses = number_format(parseFloat(datos.ImporteAbono6Meses), 2);
+                            var ImporteAbono9Meses = number_format(parseFloat(datos.ImporteAbono9Meses), 2);
+                            var ImporteAbono12Meses = number_format(parseFloat(datos.ImporteAbono12Meses), 2);
+                            var ImporteAhorro3 = number_format(parseFloat(datos.ImporteAhorro3), 2);
+                            var ImporteAhorro6 = number_format(parseFloat(datos.ImporteAhorro6), 2);
+                            var ImporteAhorro9 = number_format(parseFloat(datos.ImporteAhorro9), 2);
+                            var ImporteAhorro12 = number_format(parseFloat(datos.ImporteAhorro12), 2);
+
+
+                            $("#IdTotales").css("display", "inline-block")
+
+
+
+                            setFocusedCellValue("Importe", ImporteGenerado);
+                            setFocusedCellValue("Precio", PrecioGenerado);
+                            $("#lblEnganche").text(EngancheGenerado);
+                            $("#lblBonificacion").text(BonificacionEnganche);
+                            $("#lblTotal").text(TotalAdeudo);
+
+
+                            $("#IdAbonos3").text(ImporteAbono3Meses);
+                            $("#IdAbonos6").text(ImporteAbono6Meses);
+                            $("#IdAbonos9").text(ImporteAbono9Meses);
+                            $("#IdAbonos12").text(ImporteAbono12Meses);
+
+                            $("#IdTotalpagar3").text(Total3Meses);
+                            $("#IdTotalpagar6").text(Total6Meses);
+                            $("#IdTotalpagar9").text(Total9Meses);
+                            $("#IdTotalpagar12").text(Total12Meses);
+
+                            $("#IdImporteAhorro3").text(ImporteAhorro3);
+                            $("#IdImporteAhorro6").text(ImporteAhorro6);
+                            $("#IdImporteAhorro9").text(ImporteAhorro9);
+                            $("#IdImporteAhorro12").text(ImporteAhorro12);
+
+
+                        }
+                        else {
+
+
+                            MensajeNotificacion("Error", "Error Al Obtener Importes", "error");
+                        }
+
+                    }
+                }
+            })
+
+        }
+
+        function obtenerConsecutivo() {
+            $.ajax({
+                url: '@Url.Action("ObtenerConsecutivo", "Ventas")',
+                success: function (data) {
+                    if (data != null && data != "") {
+                        var datos = JSON.parse(data);
+                        if (datos.Estatus == "Correcto") {
+
+                            $("#FolioVta").text("Folio Venta:" + datos.Consecutivo);
+
+                        } else {
+
+
+                        }
+
+                    }
+                }
+            })
+        }
+
+        function number_format(amount, decimals) {
+
+            amount += ''; // por si pasan un numero en vez de un string
+            amount = parseFloat(amount.replace(/[^0-9\.]/g, '')); // elimino cualquier cosa que no sea numero o punto
+
+            decimals = decimals || 0; // por si la variable no fue fue pasada
+
+            // si no es un numero o es igual a cero retorno el mismo cero
+            if (isNaN(amount) || amount === 0)
+                return parseFloat(0).toFixed(decimals);
+
+            // si es mayor o menor que cero retorno el valor formateado como numero
+            amount = '' + amount.toFixed(decimals);
+
+            var amount_parts = amount.split('.'),
+                regexp = /(\d+)(\d{3})/;
+
+            while (regexp.test(amount_parts[0]))
+                amount_parts[0] = amount_parts[0].replace(regexp, '$1' + ',' + '$2');
+
+            return amount_parts.join('.');
+        }
+        function seleccionarCliente(e) {
+
+            debugger;
+
+            var Cliente = this.dataItem(e.item.index());
+
+            var rfc = Cliente.RFC;
+            var nombreCliente = Cliente.NombreCliente;;
+
+            $("#RFC").text("RFC: " + rfc)
+
+
+            validarCliente();
+        }
+
+
+
+        function seleccionarArticulo(e) {
+
+            debugger;
+
+            var Articulo = this.dataItem(e.item.index());
+            var Existencia = Articulo.Existencia;
+            var PrecioU = Articulo.Precio;
+            var Modelo = Articulo.Modelo;
+
+            var IdCliente = $("#IdCliente").data("kendoAutoComplete").value();
+
+
+            if (Articulo.Existencia == 0 || Articulo.Existencia == "0" || Articulo.Existencia == null || Articulo.Existencia == undefined) {
+               
+                MensajeNotificacion("Error", "El artículo seleccionado no cuenta con existencia, favor de verificar", "error")
+
+                $("#IdArticulo").data("kendoAutoComplete").value("")
+
+            }
+            else {
+                if (IdCliente != "" && IdCliente != undefined) {
+
+                    DescripcionArticulo = Articulo.DescripcionArticulo;
+                    IdArticulo = Articulo.IdArticulo;
+                    Precio = parseInt(Articulo.Precio);
+                    modelo = Articulo.Modelo;
+                    ExistenciAux = Articulo.Existencia;
+                } else {
+
+                    MensajeNotificacion("Error", "Seleccione un cliente", "error")
+
+                   
+                }
+            }
+
+        }
+
+
+        function tempcantidad(dataItem) {
+            // do not allow editing for product with ProductID=3
+            return dataItem.Id != 3;
+        }
+        function parametrosArticulos() {
+
+            return {
+
+                FiltroActual: $("#IdArticulo").data("kendoAutoComplete").value()
+            };
+        }
+
+        function btnSuiguiente() {
+
+            var grid = $("#gridDetalleVentasRegistro").data("kendoGrid");
+
+
+            if (grid != undefined && grid != null && grid._data.length != 0) {
+
+                var item = grid.dataItem(grid.select());
+
+                if (item.Cantidad != 0 && item.Cantidad != undefined && item.IdArticulo != 0 && item.IdArticulo != undefined) {
+
+                    $("#IdOpcionesPago").css("display", "inline");
+
+                    $("#Registrovent > div:nth-child(2) > button:nth-child(4)").css("display", "none");
+                    $("#Registrovent > div:nth-child(2) > button:nth-child(3)").css("display", "inline");
+
+                }
+                else {
+
+                    MensajeNotificacion("Error", "Los datos ingresados no son correctos, favor de verificar", "error")
+
+                }
+            }
+            else {
+                MensajeNotificacion("Error", "Los datos ingresados no son correctos, favor de verificar","error")
+
+                
+            }
+        }
+
+        function parametrosClientes() {
+
+            return {
+
+                FiltroActual: $("#IdCliente").data("kendoAutoComplete").value()
+            };
+        }
+
+        function validarArticulos(event) {
+
+            var IdCliente = $("#IdCliente").data("kendoAutoComplete").value();
+
+            if (IdCliente == "") {
+
+                $("#IdArticulo").data("kendoAutoComplete").value("");
+            }
+
+        }
+
+        function validarCliente(event) {
+
+            var Cliente = $("#IdCliente").data("kendoAutoComplete").value();
+
+            if (Cliente == "") {
+
+                $("#RFC").text("");
+                //  $("#IdArticuloDiv").css("display", "none");
+            }
+            else {
+
+                //$("#IdArticuloDiv").css("display", "inline-block");
+            }
+        }
+
+        function btnAgregArticulo() {
+            debugger;
+            var Articulo = $("#IdArticulo").data("kendoAutoComplete").value();
+            var idCliente = $("#IdCliente").data("kendoAutoComplete").value();
+
+            if (Articulo != "" && IdArticulo != 0 && idCliente != "") {
+
+                var grid = $("#gridDetalleVentasRegistro").data("kendoGrid");
+                grid.addRow();
+                var Precioaux = parseInt(Precio);
+
+                setFocusedCellValue("IdArticulo", IdArticulo);
+                // setFocusedCellValue("Precio",Precio);
+                setFocusedCellValue("Modelo", modelo);
+                setFocusedCellValue("Descripcion", DescripcionArticulo)
+                setFocusedCellValue("Existencia", IdArticulo);
+
+                IdArticuloAux = IdArticulo;
+                IdArticulo = 0;
+
+            }
+            else {
+                MensajeNotificacion("Error", "Faltan datos por capturar","error");
+
+            }
+        }
+
+        function seleccionarPrimero() {
+            var grid = $("#gridDetalleVentasRegistro").data("kendoGrid");
+            grid.select('tr:eq(0)');
+        }
+
+        function setFocusedCellValue(nombrecolumna, valor) {
+
+            var grid = $("#gridDetalleVentasRegistro").data("kendoGrid");
+            var item = grid.dataItem(grid.select());
+            $(grid.tbody).find("tr.k-state-selected").find("td[data-id='" + nombrecolumna + "']").text(valor);
+            item[nombrecolumna] = valor;
+
+            grid.refresh()
+        }
+        function onRowSelected(e) {
+            debugger;
+            var entidad = $("#gridDetalleVentasRegistro").data("kendoGrid").dataItems()[e.sender.select().index()];
+        }
+
+        function setFocusedCellValueCantidades(nombreColumna, valor) {
+
+            var grid = $("#gridDetalleVentasRegistro").data("kendoGrid");
+
+            var Item = grid.dataItem(grid.select());
+
+            $(grid.tbody).find("tr.k-state-selected").find("td[data-id='" + nombreColumna + "']").text(valor);
+            Item[nombreColumna] = valor;
+        }
+
+        function MensajeNotificacion(titulo, mensaje, tipo) {
+
+            notification.show({
+                title: titulo,
+                message: mensaje
+            }, tipo);
+        }
+
+
+
+        function btnCancelar() {
+
+            $("#IdTotales").css("display", "none");
+            $("#IdOpcionesPago").css("display", "none");
+
+            $("#Registrovent > div:nth-child(2) > button:nth-child(4)").css("display", "inline");
+            $("#Registrovent > div:nth-child(2) > button:nth-child(3)").css("display", "none");
+        }
+
+    </script>
+
+    <script id="errorTemplate" type="text/x-kendo-template">
+        <div class="error">
+            <img src="../Images/error.png" />
+            <h3>#= title #</h3>
+            <p>#= message #</p>
+        </div>
+    </script>
+
+<script id="successTemplate" type="text/x-kendo-template">
+    <div class="Correcto">
+        <img src="../Images/success.png" />
+        
+        <h3>#= title #</h3>
+        <p>#= message #</p>
+    </div>
+</script>
